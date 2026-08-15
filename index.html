@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="hi">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Video Downloader</title>
+<style>
+*{box-sizing:border-box}body{margin:0;font-family:Arial,sans-serif;background:#f5f7fb;color:#172033}
+.wrap{max-width:680px;margin:70px auto;padding:20px}.card{background:#fff;border-radius:18px;padding:28px;box-shadow:0 8px 30px #0001}
+h1{margin-top:0}.tabs{display:flex;gap:10px;margin:20px 0}.tab{flex:1;padding:12px;border:1px solid #ddd;border-radius:10px;background:#fff;cursor:pointer}.tab.active{background:#172033;color:#fff}
+input{width:100%;padding:14px;border:1px solid #ddd;border-radius:10px;font-size:16px}
+button.download{width:100%;margin-top:14px;padding:14px;border:0;border-radius:10px;background:#172033;color:#fff;font-size:16px;cursor:pointer}
+#status{margin-top:16px;min-height:24px}.small{font-size:13px;color:#687386;margin-top:14px}
+</style>
+</head>
+<body>
+<div class="wrap"><div class="card">
+<h1>Video Downloader</h1>
+<p>Instagram या YouTube URL डालें</p>
+<div class="tabs">
+<button class="tab active" data-site="instagram">Instagram</button>
+<button class="tab" data-site="youtube">YouTube</button>
+</div>
+<input id="url" type="url" placeholder="https://..." autocomplete="off">
+<button class="download" id="download">Download</button>
+<div id="status"></div>
+<div class="small">केवल वही content डाउनलोड करें जिसे डाउनलोड करने की अनुमति आपके पास है।</div>
+</div></div>
+<script>
+const API_BASE = "YOUR_RENDER_BACKEND_URL";
+let site = "instagram";
+document.querySelectorAll(".tab").forEach(b=>{
+  b.onclick=()=>{document.querySelectorAll(".tab").forEach(x=>x.classList.remove("active"));b.classList.add("active");site=b.dataset.site}
+});
+document.getElementById("download").onclick=async()=>{
+  const url=document.getElementById("url").value.trim(), status=document.getElementById("status");
+  if(!url){status.textContent="कृपया URL डालें।";return}
+  if(API_BASE.includes("YOUR_")){status.textContent="पहले Render backend URL सेट करें।";return}
+  status.textContent="Processing...";
+  try{
+    const r=await fetch(API_BASE+"/download",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({url,site})});
+    const data=await r.json();
+    if(!r.ok) throw new Error(data.error||"Request failed");
+    if(data.download_url){location.href=data.download_url}
+    else status.textContent=data.message||"Processing complete.";
+  }catch(e){status.textContent="Error: "+e.message}
+};
+</script>
+</body>
+</html>
